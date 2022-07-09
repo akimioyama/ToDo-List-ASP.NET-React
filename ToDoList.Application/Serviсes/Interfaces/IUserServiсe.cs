@@ -10,5 +10,7 @@ namespace ToDoList.Application.Serviсes.Interfaces
     public interface IUserServiсe
     {
         public UserDTO GetUserInfo(int id);
+        public JwtDTO LoginUser(string login, string password);
+        public JwtDTO RegisterUser(UserDTO userDTO);
     }
 }

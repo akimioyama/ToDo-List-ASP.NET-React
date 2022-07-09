@@ -16,7 +16,7 @@ namespace ToDoList.EntityFramework.Repository.Implementation
     public class NoteSelects : INoteSelects
     {
         //[ResponseType(typeof(Note))]
-        public HttpResponseMessage CreateNote(HttpRequestMessage request, Note noteNew)
+        public bool CreateNote(Note noteNew)
         {
             using (TodoListContext db = new TodoListContext())
             {
@@ -26,19 +26,19 @@ namespace ToDoList.EntityFramework.Repository.Implementation
                     {
                         db.Notes.Add(noteNew);
                         db.SaveChanges();
-                        return request.CreateResponse(HttpStatusCode.OK, "Заметку добавили");
+                        return true;
                     }
                     else
                     {
-                        return request.CreateResponse(HttpStatusCode.BadRequest, "Заметку НЕ добавили");
+                        return false;
                     }
 
 
                 }
-                catch (Exception ex)
+                catch
                 {
                     //_logger.LogError($"Failed to get all Machine types: {ex}");
-                    return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                    return false;
                 }
             }
         }

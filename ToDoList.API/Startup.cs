@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using ToDoList.Application.Serviñes.Implementation;
 using ToDoList.Application.Serviñes.Interfaces;
+using ToDoList.Common;
 
 namespace ToDoList.API
 {
@@ -25,9 +26,11 @@ namespace ToDoList.API
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            authOp = Configuration.GetSection("Auth").Get<AuthOptions>();
         }
 
         public IConfiguration Configuration { get; }
+        public AuthOptions authOp { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -44,11 +47,11 @@ namespace ToDoList.API
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
-                        ValidIssuer = autOp.Issuer,
+                        ValidIssuer = authOp.Issuer,
                         ValidateAudience = true,
-                        ValidAudience = autOp.Audience,
+                        ValidAudience = authOp.Audience,
                         ValidateLifetime = true,
-                        IssuerSigningKey = autOp.GetSymmetricSecurityKey(),
+                        IssuerSigningKey = authOp.GetSymmetricSecurityKey(),
                         ValidateIssuerSigningKey = true,
                     };
                 });
@@ -62,9 +65,6 @@ namespace ToDoList.API
                     Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer"
                 });
-
-
-
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
                     {
                         {
@@ -83,7 +83,6 @@ namespace ToDoList.API
                             new List<string>()
                         }
                     });
-
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Mfc.Health.Corner.Api",

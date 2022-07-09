@@ -11,11 +11,21 @@ using ToDoList.Application.Serviсes.Interfaces;
 using ToDoList.EntityFramework.Repository.Interfaces;
 using ToDoList.EntityFramework.Repository.Implementation;
 using ToDoList.Domain;
+using Microsoft.Extensions.Configuration;
+using ToDoList.Common;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace ToDoList.Application.Serviсes.Implementation
 {
     public class UserServiсe : IUserServiсe
     {
+        IConfiguration _configuration;
+        public UserServiсe(IConfiguration conf)
+        {
+            _configuration = conf;
+        }
+        public AuthOptions authOp { get; }
         public UserDTO GetUserInfo(int id)
         {
             IUserSelects userSelects = new UserSelects();
@@ -30,7 +40,101 @@ namespace ToDoList.Application.Serviсes.Implementation
             };
             return userDTO;
         }
-        /*
+
+       public JwtDTO LoginUser(string login, string password)
+       {
+            try
+            {
+                IUserSelects userSelects = new UserSelects();
+                int? userId = userSelects.FindUserByLoginAndPassword(login, password);
+                if (userId != null)
+                {
+                    return GetJwtDTOById(userId);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+       }
+       public JwtDTO RegisterUser(UserDTO userDTO)
+       {
+            try
+            {
+                User user = new User()
+                {
+                    Login = userDTO.Login,
+                    Password = userDTO.Password,
+                    Email = userDTO.Email,
+                    Fio = userDTO.Fio
+                };
+                IUserSelects userSelects = new UserSelects();
+
+                if (userSelects.CreateUser(user))
+                {
+                    int? userId = userSelects.FindUserByLoginAndPassword(userDTO.Login, userDTO.Password);
+                    if(userId != null)
+                    {
+                        CategorySelects categorySelects = new CategorySelects();
+                        Category category = new Category()
+                        {
+                            Name = "Без категории",
+                            UserId = userId.Value
+                        };
+                        categorySelects.CreateCategory(category);
+                        return GetJwtDTOById(userId);
+                    }
+                }
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+       }
+
+        private JwtDTO GetJwtDTOById(int? id)
+        {
+            try
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/sid", id.ToString())
+                };
+                ClaimsIdentity claimsIdentity = 
+                    new ClaimsIdentity(claims, "Token", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+
+                var autOp = _configuration.GetSection("Auth").Get<AuthOptions>();
+                var now = DateTime.UtcNow;
+                // создаем JWT-токен
+                var jwt = new JwtSecurityToken(
+                        issuer: autOp.Issuer,
+                        audience: autOp.Audience,
+                        notBefore: now,
+                        claims: claimsIdentity.Claims,
+                        expires: now.Add(TimeSpan.FromMinutes(autOp.Lifetime)),
+                        signingCredentials: new SigningCredentials(autOp.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+                var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+                JwtDTO response = new JwtDTO()
+                {
+                    access_token = encodedJwt,
+                    username = claimsIdentity.Name
+                };
+
+                return response;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
         private string GetUserIdFromJwt(string jwtString)
         {
             try
@@ -49,7 +153,7 @@ namespace ToDoList.Application.Serviсes.Implementation
                 }
                 return null;
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }
@@ -78,13 +182,13 @@ namespace ToDoList.Application.Serviсes.Implementation
             return new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = autOp.Issuer,
+                ValidIssuer = authOp.Issuer,
                 ValidateAudience = true,
-                ValidAudience = autOp.Audience,
+                ValidAudience = authOp.Audience,
                 ValidateLifetime = true,
-                IssuerSigningKey = autOp.GetSymmetricSecurityKey(),
+                IssuerSigningKey = authOp.GetSymmetricSecurityKey(),
                 ValidateIssuerSigningKey = true,
             };
-        }*/
+        }
     }
 }

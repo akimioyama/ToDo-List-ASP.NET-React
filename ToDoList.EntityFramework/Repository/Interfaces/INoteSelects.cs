@@ -11,7 +11,7 @@ namespace ToDoList.EntityFramework.Repository.Interfaces
 {
     public interface INoteSelects
     {
-        public HttpResponseMessage CreateNote(HttpRequestMessage request, Note noteNew);
+        public bool CreateNote(Note noteNew);
         public Note GetNoteById(int id);
         public List<Note> GetNoteByCategoryId(int categoryId);
         public List<Note> GetNoteByUserId(int userId);

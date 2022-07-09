@@ -10,7 +10,7 @@ namespace ToDoList.EntityFramework.Repository.Interfaces
 {
     public interface ICategorySelects
     {
-        public HttpResponseMessage CreateCategory(HttpRequestMessage request, Category categoryNew);
+        public bool CreateCategory(Category categoryNew);
         public Category GetCategoryById(int id);
         public List<Category> GetCategoriesByUserId(int userId);
         public bool ChangeCategory(Category categoryNew);

@@ -12,7 +12,7 @@ namespace ToDoList.EntityFramework.Repository.Implementation
 {
     public class CategorySelects : ICategorySelects
     {
-        public HttpResponseMessage CreateCategory(HttpRequestMessage request, Category categoryNew)
+        public bool CreateCategory(Category categoryNew)
         {
             using (TodoListContext db = new TodoListContext())
             {
@@ -22,19 +22,18 @@ namespace ToDoList.EntityFramework.Repository.Implementation
                     {
                         db.Categories.Add(categoryNew);
                         db.SaveChanges();
-                        return request.CreateResponse(HttpStatusCode.OK, "Категорию добавили");
+                        return true;
                     }
                     else
                     {
-                        return request.CreateResponse(HttpStatusCode.BadRequest, "Категорию НЕ добавили");
+                        return false;
                     }
 
 
                 }
-                catch (Exception ex)
+                catch
                 {
-                    //_logger.LogError($"Failed to get all Machine types: {ex}");
-                    return new HttpResponseMessage(HttpStatusCode.BadRequest);
+                    return false;
                 }
             }
         }
