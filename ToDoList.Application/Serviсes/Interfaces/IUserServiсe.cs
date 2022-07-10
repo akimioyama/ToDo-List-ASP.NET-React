@@ -9,8 +9,10 @@ namespace ToDoList.Application.Serviсes.Interfaces
 {
     public interface IUserServiсe
     {
-        public UserDTO GetUserInfo(int id);
-        public JwtDTO LoginUser(string login, string password);
-        public JwtDTO RegisterUser(UserDTO userDTO);
+        public bool AddUser(UserDTO userDTO);
+        public UserDTO GetUserById(int id);
+        public UserDTO ChangeUser(UserDTO userDTO);
+        public bool DeleteUserById(int id);
+
     }
 }

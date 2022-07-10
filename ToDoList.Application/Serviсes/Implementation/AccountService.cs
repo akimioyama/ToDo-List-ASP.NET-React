@@ -18,80 +18,81 @@ using System.Security.Claims;
 
 namespace ToDoList.Application.Serviсes.Implementation
 {
-    public class UserServiсe : IUserServiсe
+    public class AccountService : IAccountService
     {
         IConfiguration _configuration;
         IUserSelects userSelects;
-        public UserServiсe(IConfiguration conf)
+        public AccountService(IConfiguration conf)
         {
             _configuration = conf;
             userSelects = new UserSelects();
         }
-        public bool AddUser(UserDTO userDTO)
+        public string Login(string login, string password)
         {
             try
             {
-                User user = new User()
+                int? userId = userSelects.FindUserIdByLoginAndPassword(login, password);
+                if (userId != null)
                 {
-                    Login = userDTO.Login,
-                    Password = userDTO.Password,
-                    Email = userDTO.Email,
-                    Fio = userDTO.Fio
-                };
-                if (userSelects.CreateUser(user))
-                {
-                    int? userId = user.Id;
-                    if (userId != null)
-                    {
-                        CategorySelects categorySelects = new CategorySelects();
-                        Category category = new Category()
-                        {
-                            Name = "Без категории",
-                            UserId = userId.Value
-                        };
-                        categorySelects.CreateCategory(category);
-                        return true;
-                    }
+                    return GetJwtDTOById(userId);
                 }
-                return false;
+                else
+                    return null;
             }
             catch
             {
-                return false;
+                return null;
             }
         }
-        public UserDTO GetUserById(int id)
+        public AccountDTO GetAccountInfoByJwt(string jwt)
         {
-            User user = userSelects.GetUserById(id);
-            UserDTO userDTO = new UserDTO()
+            try
             {
-                Id = id,
-                Login = user.Login,
-                Password = user.Password,
-                Email = user.Email,
-                Fio = user.Fio
-            };
-            return userDTO;
-        }
-        public UserDTO ChangeUser(UserDTO userDTO)
-        {
-            User userNew = new User()
-            {
-                Id = userDTO.Id,
-                Login = userDTO.Login,
-                Password = userDTO.Password,
-                Email = userDTO.Email,
-                Fio = userDTO.Fio
-            };
-            if (userSelects.ChangeUser(userNew))
-            {
-                return userDTO;
+                int userId = Convert.ToInt32(GetUserIdFromJwt(jwt));
+                User user = userSelects.GetUserById(userId);
+                AccountDTO accountDTO = new AccountDTO()
+                {
+                    Login = user.Login,
+                    Password = user.Password,
+                    Email = user.Email,
+                    Fio = user.Fio
+                };
+                return accountDTO;
             }
-            return null;
+            catch
+            {
+                return null;
+            }
         }
-        public bool DeleteUserById(int id)
+        public AccountDTO ChangeAccountInfoByJwt(AccountDTO accountDTO, string jwt)
         {
-            if (userSelects.DeleteUserById(id))
+            try
+            {
+                int userId = Convert.ToInt32(GetUserIdFromJwt(jwt));
+                User userNew = new User()
+                {
+                    Id = userId,
+                    Login = accountDTO.Login,
+                    Password = accountDTO.Password,
+                    Email = accountDTO.Email,
+                    Fio = accountDTO.Fio
+                };
+                if (userSelects.ChangeUser(userNew))
+                {
+                    return accountDTO;
+                }
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+            
+        }
+        public bool DeleteAccountInfoByJwt(string jwt)
+        {
+            int userId = Convert.ToInt32(GetUserIdFromJwt(jwt));
+            if (userSelects.DeleteUserById(userId))
             {
                 return true;
             }
@@ -124,7 +125,7 @@ namespace ToDoList.Application.Serviсes.Implementation
                 }
                 return null;
             }
-            catch
+            catch (Exception ex)
             {
                 return null;
             }
@@ -196,4 +197,3 @@ namespace ToDoList.Application.Serviсes.Implementation
         }
     }
 }
-       

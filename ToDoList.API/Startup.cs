@@ -83,20 +83,23 @@ namespace ToDoList.API
                             new List<string>()
                         }
                     });
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Mfc.Health.Corner.Api",
-                    Version = "v1",
-                    Description = "Mfc.Health.Corner API"
-                });
+                //c.SwaggerDoc("v1", new OpenApiInfo
+                //{
+                //    Title = "ToDoList.Api",
+                //    Version = "v1",
+                //    Description = "ToDoList.Corner API"
+                //});
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
+                //c.IncludeXmlComments(xmlPath);
 
                 //c.EnableAnnotations();
             });
 
             services.AddTransient<IUserServiñe, UserServiñe>();
+            services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<INoteService, NoteService>();
+            services.AddTransient<IAccountService, AccountService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -4,15 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ToDoList.Domain
+namespace ToDoList.Application.DTO
 {
-    public class User
+    public class AccountDTO
     {
-        public int Id { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
         public string Email { get; set; }
         public string Fio { get; set; }
-        public List<Category> Categories { get; set; }
     }
 }

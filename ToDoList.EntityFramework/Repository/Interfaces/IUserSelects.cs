@@ -9,10 +9,10 @@ namespace ToDoList.EntityFramework.Repository.Interfaces
 {
     public interface IUserSelects
     {
-        public User GetUserById(int id);
         public bool CreateUser(User userNew);
-        public bool DeleteUserById(int id);
+        public User GetUserById(int id);
         public bool ChangeUser(User userNew);
-        public int? FindUserByLoginAndPassword(string login, string password);
+        public bool DeleteUserById(int id);
+        public int? FindUserIdByLoginAndPassword(string login, string password);
     }
 }

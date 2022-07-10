@@ -1,106 +1,130 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoList.Application.DTO;
 using ToDoList.Application.Serviсes.Interfaces;
-using ToDoList.EntityFramework.Repository.Interfaces;
-using ToDoList.EntityFramework.Repository.Implementation;
-using ToDoList.Domain;
-using Microsoft.Extensions.Configuration;
 using ToDoList.Common;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using ToDoList.Domain;
+using ToDoList.EntityFramework.Repository.Implementation;
+using ToDoList.EntityFramework.Repository.Interfaces;
 
 namespace ToDoList.Application.Serviсes.Implementation
 {
-    public class UserServiсe : IUserServiсe
+    public class CategoryService : ICategoryService
     {
         IConfiguration _configuration;
-        IUserSelects userSelects;
-        public UserServiсe(IConfiguration conf)
+        ICategorySelects categorySelects;
+        public CategoryService(IConfiguration conf)
         {
             _configuration = conf;
-            userSelects = new UserSelects();
+            categorySelects = new CategorySelects();
         }
-        public bool AddUser(UserDTO userDTO)
+        public CategoryDTO CreateCategoryByJwt(CategoryDTO categoryDTO, string jwt)
         {
-            try
+            int userId = Convert.ToInt32(GetUserIdFromJwt(jwt));
+            Category category = new Category()
             {
-                User user = new User()
-                {
-                    Login = userDTO.Login,
-                    Password = userDTO.Password,
-                    Email = userDTO.Email,
-                    Fio = userDTO.Fio
-                };
-                if (userSelects.CreateUser(user))
-                {
-                    int? userId = user.Id;
-                    if (userId != null)
-                    {
-                        CategorySelects categorySelects = new CategorySelects();
-                        Category category = new Category()
-                        {
-                            Name = "Без категории",
-                            UserId = userId.Value
-                        };
-                        categorySelects.CreateCategory(category);
-                        return true;
-                    }
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        public UserDTO GetUserById(int id)
-        {
-            User user = userSelects.GetUserById(id);
-            UserDTO userDTO = new UserDTO()
-            {
-                Id = id,
-                Login = user.Login,
-                Password = user.Password,
-                Email = user.Email,
-                Fio = user.Fio
+                Name = categoryDTO.Name,
+                UserId = userId
             };
-            return userDTO;
-        }
-        public UserDTO ChangeUser(UserDTO userDTO)
-        {
-            User userNew = new User()
+            if (categorySelects.CreateCategory(category))
             {
-                Id = userDTO.Id,
-                Login = userDTO.Login,
-                Password = userDTO.Password,
-                Email = userDTO.Email,
-                Fio = userDTO.Fio
-            };
-            if (userSelects.ChangeUser(userNew))
-            {
-                return userDTO;
+                categoryDTO.Id = category.Id;
+                return categoryDTO;
             }
             return null;
         }
-        public bool DeleteUserById(int id)
+        public CategoryDTO CreateCategoryByUserId(CategoryDTO categoryDTO, int userId)
         {
-            if (userSelects.DeleteUserById(id))
+            Category category = new Category()
             {
-                return true;
+                Name = categoryDTO.Name,
+                UserId = userId
+            };
+            if (categorySelects.CreateCategory(category))
+            {
+                categoryDTO.Id = category.Id;
+                return categoryDTO;
             }
-            return false;
+            return null;
         }
-
-
-
-
+        public CategoryDTO ChangeCategory(CategoryDTO categoryDTO)
+        {
+            Category category = new Category()
+            {
+                Name = categoryDTO.Name,
+                Id = categoryDTO.Id
+            };
+            if (categorySelects.ChangeCategory(category))
+            {
+                return categoryDTO;
+            }
+            return null;
+        }
+        public bool DeleteCategory(int id)
+        {
+            return categorySelects.DeleteCategoryById(id);
+        }
+        public CategoryDTO GetCategory(int id)
+        {
+            Category category = categorySelects.GetCategoryById(id);
+            if (category != null)
+            {
+                CategoryDTO categoryDTO = new CategoryDTO()
+                {
+                    Id = category.Id,
+                    Name = category.Name
+                };
+                return categoryDTO;
+            }
+            return null;
+        }
+        public List<CategoryDTO> GetCategotyListByUserId(int userId)
+        {
+            List<Category> categories = categorySelects.GetCategoriesByUserId(userId);
+            if (categories != null)
+            {
+                List<CategoryDTO> categoriesDTO = new List<CategoryDTO>();
+                foreach (Category c in categories)
+                {
+                    CategoryDTO cDTO = new CategoryDTO()
+                    {
+                        Id = c.Id,
+                        Name = c.Name
+                    };
+                    categoriesDTO.Add(cDTO);
+                }
+                return categoriesDTO;
+            }
+            return null;
+        }
+        public List<CategoryDTO> GetCategotyListByJwt(string jwt)
+        {
+            int userId = Convert.ToInt32(GetUserIdFromJwt(jwt));
+            List<Category> categories = categorySelects.GetCategoriesByUserId(userId);
+            if (categories != null)
+            {
+                List<CategoryDTO> categoriesDTO = new List<CategoryDTO>();
+                foreach (Category c in categories)
+                {
+                    CategoryDTO cDTO = new CategoryDTO()
+                    {
+                        Id = c.Id,
+                        Name = c.Name
+                    };
+                    categoriesDTO.Add(cDTO);
+                }
+                return categoriesDTO;
+            }
+            return null;
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -124,7 +148,7 @@ namespace ToDoList.Application.Serviсes.Implementation
                 }
                 return null;
             }
-            catch
+            catch (Exception ex)
             {
                 return null;
             }
@@ -196,4 +220,3 @@ namespace ToDoList.Application.Serviсes.Implementation
         }
     }
 }
-       
